@@ -11,128 +11,122 @@ const saltRounds = 10;
 const User = require("../models/User.model");
 
 // Require necessary (isLoggedOut and isLiggedIn) middleware in order to control access to specific routes
-const isLoggedOut = require("../middleware/isLoggedOut");
-const isLoggedIn = require("../middleware/isLoggedIn");
 
-router.get("/loggedin", (req, res) => {
-  res.json(req.user);
-});
+const capitalize = require("../scripts/functions/capitalize");
 
-router.post("/signup", isLoggedOut, (req, res) => {
-  const { username, password } = req.body;
+// POST /auth/signup  - Creates a new user in the database
+router.post("/signup", (req, res, next) => {
+  const { email, password, firstname, lastname } = req.body;
 
-  if (!username) {
-    return res
+  // Check if email or password or name are provided as empty string
+  if (email === "" || password === "" || firstname === "" || lastname === "") {
+    res
       .status(400)
-      .json({ errorMessage: "Please provide your username." });
+      .json({ message: "Provide email, password, firstname and lastname" });
+    return;
   }
 
-  // if (password.length < 8) {
-  //   return res.status(400).json({
-  //     errorMessage: "Your password needs to be at least 8 characters long.",
-  //   });
-  // }
+  // Use regex to validate the email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  if (!emailRegex.test(email)) {
+    res.status(400).json({ message: "Provide a valid email address." });
+    return;
+  }
 
-  //   ! This use case is using a regular expression to control for special characters and min length
-
-  const regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
-
-  if (!regex.test(password)) {
-    return res.status(400).json({
-      errorMessage:
-        "Password needs to have at least 8 chars and must contain at least one number, one lowercase and one uppercase letter.",
+  // Use regex to validate the password format
+  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  if (!passwordRegex.test(password)) {
+    res.status(400).json({
+      message:
+        "Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.",
     });
+    return;
   }
 
-  // Search the database for a user with the email submitted in the form
-  User.findOne({ email }).then((found) => {
-    // If the user is found, send the message email is taken
-    if (found) {
-      return res.status(400).json({ errorMessage: "Email is already taken." });
-    }
-
-    // if user is not found, create a new user - start with hashing the password
-    return bcrypt
-      .genSalt(saltRounds)
-      .then((salt) => bcrypt.hash(password, salt))
-      .then((hashedPassword) => {
-        // Create a user and save it in the database
-        return User.create({
-          email,
-          firstname,
-          lastname,
-          password: hashedPassword,
-        });
-      })
-      .then((user) => {
-        // Bind the user to the session object
-        req.session.user = user;
-        res.status(201).json(user);
-      })
-      .catch((error) => {
-        if (error instanceof mongoose.Error.ValidationError) {
-          return res.status(400).json({ errorMessage: error.message });
-        }
-        if (error.code === 11000) {
-          return res.status(400).json({
-            errorMessage:
-              "Username need to be unique. The username you chose is already in use.",
-          });
-        }
-        return res.status(500).json({ errorMessage: error.message });
-      });
-  });
-});
-
-router.post("/login", isLoggedOut, (req, res, next) => {
-  const { email, password } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ errorMessage: "Please provide your email." });
-  }
-
-  // Here we use the same logic as above
-  // - either length based parameters or we check the strength of a password
-  if (password.length < 8) {
-    return res.status(400).json({
-      errorMessage: "Your password needs to be at least 8 characters long.",
-    });
-  }
-
-  // Search the database for a user with the username submitted in the form
+  // Check the users collection if a user with the same email already exists
   User.findOne({ email })
-    .then((user) => {
-      // If the user isn't found, send the message that user provided wrong credentials
-      if (!user) {
-        return res.status(400).json({ errorMessage: "Wrong credentials." });
+    .then((foundUser) => {
+      // If the user with the same email already exists, send an error response
+      if (foundUser) {
+        res.status(400).json({ message: "User already exists." });
+        return;
       }
 
-      // If user is found based on the username, check if the in putted password matches the one saved in the database
-      bcrypt.compare(password, user.password).then((isSamePassword) => {
-        if (!isSamePassword) {
-          return res.status(400).json({ errorMessage: "Wrong credentials." });
-        }
-        req.session.user = user;
-        // req.session.user = user._id; // ! better and safer but in this case we saving the entire user object
-        return res.json(user);
+      // If email is unique, proceed to hash the password
+      const salt = bcrypt.genSaltSync(saltRounds);
+      const hashedPassword = bcrypt.hashSync(password, salt);
+
+      const something = capitalize.capitalize(firstname);
+      console.log(something);
+      // Create the new user in the database
+      // We return a pending promise, which allows us to chain another `then`
+      return User.create({
+        email,
+        password: hashedPassword,
+        firstname: capitalize.capitalize(firstname),
+        lastname: capitalize.capitalize(lastname),
       });
     })
+    .then((createdUser) => {
+      // Deconstruct the newly created user object to omit the password
+      // We should never expose passwords publicly
+      const { email, firstname, lastname, _id } = createdUser;
 
+      // Create a new object that doesn't expose the password
+      const user = { email, firstname, lastname, _id };
+
+      // Send a json response containing the user object
+      res.status(201).json({ user: user });
+    })
     .catch((err) => {
-      // in this case we are sending the error handling to the error handling middleware that is defined in the error handling file
-      // you can just as easily run the res.status that is commented out below
-      next(err);
-      // return res.status(500).render("login", { errorMessage: err.message });
+      console.log(err);
+      res.status(500).json({ message: "Internal Server Error" });
     });
 });
 
-router.get("/logout", isLoggedIn, (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ errorMessage: err.message });
-    }
-    res.json({ message: "Done" });
-  });
+// Search the database for a user with the username submitted in the form
+// POST  /auth/login - Verifies email and password and returns a JWT
+router.post("/login", (req, res, next) => {
+  const { email, password } = req.body;
+
+  // Check if email or password are provided as empty string
+  if (email === "" || password === "") {
+    res.status(400).json({ message: "Provide email and password." });
+    return;
+  }
+
+  // Check the users collection if a user with the same email exists
+  User.findOne({ email })
+    .then((foundUser) => {
+      if (!foundUser) {
+        // If the user is not found, send an error response
+        res.status(401).json({ message: "User not found." });
+        return;
+      }
+
+      // Compare the provided password with the one saved in the database
+      const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
+
+      if (passwordCorrect) {
+        // Deconstruct the user object to omit the password
+        const { _id, email, name } = foundUser;
+
+        // Create an object that will be set as the token payload
+        const payload = { _id, email, firstname, lastname };
+
+        // Create and sign the token
+        const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+          algorithm: "HS256",
+          expiresIn: "6h",
+        });
+
+        // Send the token as the response
+        res.status(200).json({ authToken: authToken });
+      } else {
+        res.status(401).json({ message: "Unable to authenticate the user" });
+      }
+    })
+    .catch((err) => res.status(500).json({ message: "Internal Server Error" }));
 });
 
 module.exports = router;
