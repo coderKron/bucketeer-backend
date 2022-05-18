@@ -31,10 +31,10 @@ const userSchema = new Schema(
     },
 
     way: {
-      type: string,
+      type: String,
       enum: ["To Enlighten", "To Achieve", "To Enjoy"],
     },
-    tagline: string,
+    tagline: String,
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`

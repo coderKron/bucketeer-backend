@@ -14,7 +14,7 @@ const capitalize = require("../scripts/functions/capitalize");
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { email, password, firstname, lastname } = req.body;
+  const { firstname, lastname, email, password} = req.body;
   // Check if email or password or name are provided as empty string
   if (email === "" || password === "" || firstname === "" || lastname === "") {
     console.log(req.body);
