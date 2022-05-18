@@ -1,13 +1,12 @@
 const { Schema, model } = require("mongoose");
 
-// TODO: Please make sure you edit the user model to whatever makes sense in this case
+
 const userSchema = new Schema(
   {
     firstname: {
       type: String,
       required: true,
     },
-    password: String,
     lastname: {
       type: String,
       required: true,
@@ -20,6 +19,22 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
+    passwordHash: {
+      type: String,
+      required: [true, "Password is required"],
+    },
+
+    profilePicture: {
+      type: String,
+      default:
+        "https://res.cloudinary.com/coderkron/image/upload/v1651678876/pt-app/avatar-g2d383e400_1280_hojdie.png",
+    },
+
+    way: {
+      type: string,
+      enum: ["To Enlighten", "To Achieve", "To Enjoy"],
+    },
+    tagline: string,
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
