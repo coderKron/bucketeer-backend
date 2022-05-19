@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const {default: mongoose} = require('mongoose')
 
 
 const bucketSchema = new Schema(
@@ -37,10 +38,10 @@ const bucketSchema = new Schema(
     comments: [
       {
         user: {
-          type: string,
+          type: String,
         },
         comment: {
-          type: string,
+          type: String,
         },
       },
     ],
