@@ -67,11 +67,9 @@ router.put("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
         ? Bucket.findByIdAndUpdate(bucketId, req.body, { new: true }).then(
             (updatedBucket) => res.json(updatedBucket)
           )
-        : res
-            .status(444)
-            .json({
-              message: "Only the user that created the bucket can edit it",
-            })
+        : res.status(444).json({
+            message: "Only the user that created the bucket can edit it",
+          });
     })
 
     .catch((err) => {
@@ -83,7 +81,7 @@ router.put("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
     });
 });
 
-//DELETE - api/bucket/:bucketid
+//DELETE - api/bucket/:bucketid - only the person that created the bucket can delete it
 router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
   const { bucketId } = req.params;
 
@@ -92,13 +90,21 @@ router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
     return;
   }
 
-  Bucket.findByIdAndRemove(bucketId).then((deletedBucket) =>
-    console.log("The following bucket has been deleted", deletedBucket)
-  );
-  res
-    .json({
-      message: `The bucket with id ${bucketId} has now been deleted`,
+  Bucket.findById(bucketId)
+    .then((response) => {
+      response.user === req.payload._id
+        ? Bucket.findByIdAndRemove(bucketId).then((deletedBucket) =>
+            res.json({
+              message: `The bucket with id ${bucketId} has now been deleted`,
+            })
+          )
+        : res
+            .status(444)
+            .json({
+              message: "Only the user that created the bucket can delete it",
+            });
     })
+
     .catch((err) => {
       console.log("error deleting bucket", err);
       res.status(500).json({
