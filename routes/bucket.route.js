@@ -33,7 +33,22 @@ router.post("/bucket", isAuthenticated, (req, res, next) => {
     })
 })
 
-//GET - api/bucket   
+//GET - api/bucket - Get a list of buckets
+ 
+router.get("/bucket", isAuthenticated, (req, res, next) => {
+    Bucket.find({user: req.payload._id})
+    .populate("kicks")
+    .then(response => {
+        res.json(response)
+    })
+    .catch((err) => {
+        console.log("error getting list of buckets", err);
+        res.status(500).json({
+          message: "error getting list of buckets",
+          error: err,
+        });
+      });
+})
 
 //PUT - api/bucket/:bucketid   
 
