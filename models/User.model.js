@@ -31,7 +31,9 @@ const userSchema = new Schema(
     way: {
       type: String,
       enum: ["To Enlighten", "To Achieve", "To Enjoy"],
+      default: "To Enjoy",
     },
+    
     tagline: String,
   },
   {
