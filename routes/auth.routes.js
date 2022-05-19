@@ -5,16 +5,14 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const saltRounds = 10;
 
-
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middelware");
-
 
 const capitalize = require("../scripts/functions/capitalize");
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { firstname, lastname, email, password} = req.body;
+  const { firstname, lastname, email, password } = req.body;
 
   // Check if email or password or name are provided as empty string
   if (email === "" || password === "" || firstname === "" || lastname === "") {
@@ -83,8 +81,6 @@ router.post("/signup", (req, res, next) => {
     });
 });
 
-
-
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
@@ -94,15 +90,12 @@ router.post("/login", (req, res, next) => {
     return;
   }
 
-
   User.findOne({ email })
     .then((foundUser) => {
       if (!foundUser) {
-
         res.status(401).json({ message: "User not found." });
         return;
       }
-
 
       const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
 
@@ -129,7 +122,6 @@ router.post("/login", (req, res, next) => {
       res.status(500).json({ message: "Internal Server Error", error: err })
     );
 });
-
 
 // GET  /auth/verify  -  Used to verify JWT stored on the client
 router.get("/verify", isAuthenticated, (req, res, next) => {
