@@ -74,5 +74,27 @@ router.put("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
     });
 
 //DELETE - api/bucket/:bucketid
+router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
+    const {bucketId} = req.params
+
+    if (!mongoose.Types.ObjectId.isValid(bucketId)) {
+        res.status(400).json({ message: "Specified id is not valid" });
+        return;
+    }
+
+    Bucket.findByIdAndRemove(bucketId)
+    .then(deletedBucket =>
+        console.log("The following bucket has been deleted", deletedBucket))
+        res.json({
+            message: `The bucket with id ${bucketId} has now been deleted`})
+            .catch((err) => {
+                console.log("error deleting bucket", err);
+                res.status(500).json({
+                  message: "error deleting bucket",
+                  error: err,
+                });
+              });
+})
+
 
 module.exports = router;
