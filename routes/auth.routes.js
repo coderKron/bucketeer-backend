@@ -5,16 +5,17 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const saltRounds = 10;
 
-// Require the User model in order to interact with the database
+
 const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middelware");
-// Require necessary (isLoggedOut and isLiggedIn) middleware in order to control access to specific routes
+
 
 const capitalize = require("../scripts/functions/capitalize");
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
   const { firstname, lastname, email, password} = req.body;
+
   // Check if email or password or name are provided as empty string
   if (email === "" || password === "" || firstname === "" || lastname === "") {
     console.log(req.body);
@@ -43,10 +44,9 @@ router.post("/signup", (req, res, next) => {
     return;
   }
 
-  // Check the users collection if a user with the same email already exists
+  // Check if a user with the same email already exists
   User.findOne({ email })
     .then((foundUser) => {
-      // If the user with the same email already exists, send an error response
       if (foundUser) {
         res.status(400).json({ message: "User already exists." });
         return;
@@ -58,8 +58,9 @@ router.post("/signup", (req, res, next) => {
 
       const something = capitalize.capitalize(firstname);
       console.log(something);
+
       // Create the new user in the database
-      // We return a pending promise, which allows us to chain another `then`
+
       return User.create({
         email,
         password: hashedPassword,
@@ -68,8 +69,6 @@ router.post("/signup", (req, res, next) => {
       });
     })
     .then((createdUser) => {
-      // Deconstruct the newly created user object to omit the password
-      // We should never expose passwords publicly
       const { email, firstname, lastname, _id } = createdUser;
 
       // Create a new object that doesn't expose the password
@@ -84,27 +83,27 @@ router.post("/signup", (req, res, next) => {
     });
 });
 
-// Search the database for a user with the username submitted in the form
+
+
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
 
-  // Check if email or password are provided as empty string
   if (email === "" || password === "") {
     res.status(400).json({ message: "Provide email and password." });
     return;
   }
 
-  // Check the users collection if a user with the same email exists
+
   User.findOne({ email })
     .then((foundUser) => {
       if (!foundUser) {
-        // If the user is not found, send an error response
+
         res.status(401).json({ message: "User not found." });
         return;
       }
 
-      // Compare the provided password with the one saved in the database
+
       const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
 
       if (passwordCorrect) {
@@ -130,6 +129,7 @@ router.post("/login", (req, res, next) => {
       res.status(500).json({ message: "Internal Server Error", error: err })
     );
 });
+
 
 // GET  /auth/verify  -  Used to verify JWT stored on the client
 router.get("/verify", isAuthenticated, (req, res, next) => {
