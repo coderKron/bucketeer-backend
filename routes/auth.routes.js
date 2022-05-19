@@ -12,14 +12,14 @@ const capitalize = require("../scripts/functions/capitalize");
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { firstname, lastname, email, password } = req.body;
+  const { userName, email, password } = req.body;
 
   // Check if email or password or name are provided as empty string
-  if (email === "" || password === "" || firstname === "" || lastname === "") {
+  if (email === "" || password === "" || userName === "") {
     console.log(req.body);
     res
       .status(400)
-      .json({ message: "Provide email, password, firstname and lastname" });
+      .json({ message: "Provide email, password, username" });
     return;
   }
 
@@ -46,31 +46,36 @@ router.post("/signup", (req, res, next) => {
   User.findOne({ email })
     .then((foundUser) => {
       if (foundUser) {
-        res.status(400).json({ message: "User already exists." });
+        res.status(400).json({ message: "Email already exists on our system." });
+        return;
+      }
+    })
+    
+
+  User.findOne({ userName })
+    .then((foundUser) => {
+      if (foundUser) {
+        res.status(400).json({ message: "UserName already exists on our system." });
         return;
       }
 
-      // If email is unique, proceed to hash the password
+      // If email and username is unique, proceed to hash the password
       const salt = bcrypt.genSaltSync(saltRounds);
       const hashedPassword = bcrypt.hashSync(password, salt);
-
-      const something = capitalize.capitalize(firstname);
-      console.log(something);
 
       // Create the new user in the database
 
       return User.create({
+        userName,
         email,
         password: hashedPassword,
-        firstname: capitalize.capitalize(firstname),
-        lastname: capitalize.capitalize(lastname),
       });
     })
     .then((createdUser) => {
-      const { email, firstname, lastname, _id } = createdUser;
+      const { email, userName, _id } = createdUser;
 
       // Create a new object that doesn't expose the password
-      const user = { email, firstname, lastname, _id };
+      const user = { email, userName, _id };
 
       // Send a json response containing the user object
       res.status(201).json({ user: user });
@@ -135,7 +140,5 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
   // previously set as the token payload
   res.status(200).json(req.payload);
 });
-
-module.exports = router;
 
 module.exports = router;
