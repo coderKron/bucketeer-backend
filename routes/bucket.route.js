@@ -51,7 +51,7 @@ router.get("/bucket", isAuthenticated, (req, res, next) => {
     });
 });
 
-//PUT - api/bucket/:bucketid - Update bucket
+//PUT - api/bucket/:bucketid - Update bucket -  only the user that created it can do this
 
 router.put("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
   const { bucketId } = req.params;
@@ -61,40 +61,51 @@ router.put("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
     return;
   }
 
-  Bucket.findByIdAndUpdate(bucketId, req.body, { new: true })
-  .then(updatedBucket =>       
-    res.json(updatedBucket))
+  Bucket.findById(bucketId)
+    .then((response) => {
+      response.user === req.payload._id
+        ? Bucket.findByIdAndUpdate(bucketId, req.body, { new: true }).then(
+            (updatedBucket) => res.json(updatedBucket)
+          )
+        : res
+            .status(444)
+            .json({
+              message: "Only the user that created the bucket can edit it",
+            })
+    })
+
     .catch((err) => {
-        console.log("error updating bucket", err);
-        res.status(500).json({
-          message: "error updating bucket",
-          error: err,
-        });
+      console.log("error updating bucket", err);
+      res.status(500).json({
+        message: "error updating bucket",
+        error: err,
       });
     });
+});
 
 //DELETE - api/bucket/:bucketid
 router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
-    const {bucketId} = req.params
+  const { bucketId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(bucketId)) {
-        res.status(400).json({ message: "Specified id is not valid" });
-        return;
-    }
+  if (!mongoose.Types.ObjectId.isValid(bucketId)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
 
-    Bucket.findByIdAndRemove(bucketId)
-    .then(deletedBucket =>
-        console.log("The following bucket has been deleted", deletedBucket))
-        res.json({
-            message: `The bucket with id ${bucketId} has now been deleted`})
-            .catch((err) => {
-                console.log("error deleting bucket", err);
-                res.status(500).json({
-                  message: "error deleting bucket",
-                  error: err,
-                });
-              });
-})
-
+  Bucket.findByIdAndRemove(bucketId).then((deletedBucket) =>
+    console.log("The following bucket has been deleted", deletedBucket)
+  );
+  res
+    .json({
+      message: `The bucket with id ${bucketId} has now been deleted`,
+    })
+    .catch((err) => {
+      console.log("error deleting bucket", err);
+      res.status(500).json({
+        message: "error deleting bucket",
+        error: err,
+      });
+    });
+});
 
 module.exports = router;
