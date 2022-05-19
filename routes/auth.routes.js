@@ -69,13 +69,16 @@ router.post("/signup", (req, res, next) => {
         userName,
         email,
         password: hashedPassword,
+        profilePicture,
+        way,
+        tagline
       });
     })
     .then((createdUser) => {
-      const { email, userName, _id } = createdUser;
+      const { _id, userName, email, profilePicture, way, tagline } = createdUser;
 
       // Create a new object that doesn't expose the password
-      const user = { email, userName, _id };
+      const user = { _id, userName, email, profilePicture, way, tagline };
 
       // Send a json response containing the user object
       res.status(201).json({ user: user });
