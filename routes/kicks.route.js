@@ -26,7 +26,7 @@ router.post("/kick", isAuthenticated, (req, res, next) => {
 
   Kicks.create(newKick)
     .then((response) => {
-        console.log(req.payload)
+      console.log(req.payload);
       res.status(201).json(response);
     })
 
@@ -59,27 +59,26 @@ router.get("/kick", (req, res, next) => {
 
 router.put("/kick/:kickId", isAuthenticated, (req, res, next) => {
   const { kickId } = req.params;
-    let kick
+  let kick;
   if (!mongoose.Types.ObjectId.isValid(kickId)) {
     res.status(400).json({ message: "Specified id is not valid" });
     return;
   }
 
   Kicks.findById(kickId)
-//   .populate("createdBy")
+    //   .populate("createdBy")
     .then((response) => {
-    //     kick = response
-    //      return User.findById(req.payload._id)})
-    // .then(user => {
-    //     if (kick.createdBy == user._id){
-        response.createdBy == req.payload._id ?
-         Kicks.findByIdAndUpdate(kickId, req.body, { new: true })
-         .then((updatedKick) => res.json(updatedKick))
-        
-            : res.status(403).json({
+      //     kick = response
+      //      return User.findById(req.payload._id)})
+      // .then(user => {
+      //     if (kick.createdBy == user._id){
+      response.createdBy == req.payload._id
+        ? Kicks.findByIdAndUpdate(kickId, req.body, { new: true }).then(
+            (updatedKick) => res.json(updatedKick)
+          )
+        : res.status(403).json({
             message: "Only the user that created the kick can edit it",
           });
-        
     })
     .catch((err) => {
       console.log("error updating kick", err);
@@ -90,34 +89,39 @@ router.put("/kick/:kickId", isAuthenticated, (req, res, next) => {
     });
 });
 
-
-// PUT - api/kick/:kickId/add - User can add ANY kick to the specified 
+// PUT - api/kick/:kickId/add - User can add ANY kick to the specified
 
 router.put("/kick/:kickId/add", isAuthenticated, (req, res, next) => {
-    const {kickId} = req.params
-    const {bucketId} = req.body
-    
+  const { kickId } = req.params;
+  const { bucketId } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(kickId)) {
-        res.status(400).json({ message: "Specified id is not valid" });
-        return;
-      }
-    
-    Kicks.findById(kickId)
-        .then(kick => {
-          console.log(kick);
-          Bucket.findByIdAndUpdate(bucketId, {$push: {kick: kick._id}}, {new:true}) 
-          })
-        .then(updatedBucket => res.json(updatedBucket))   
-        .catch((err) => {
-            console.log("error adding kicks to bucket", err);
-            res.status(500).json({
-              message: "error adding kicks to bucket",
-              error: err,
-            });
-          });
-})
+  if (!mongoose.Types.ObjectId.isValid(kickId)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
 
+  Kicks.findById(kickId)
+    .then((kick) => {
+      console.log(kick), console.log(">>>>>>> bucket ID", bucketId);
+      console.log(">>>>>>>> kick ID", kick._id);
+      return Bucket.findByIdAndUpdate(
+        bucketId,
+        { $push: { kicks: kick._id } },
+        { new: true }
+      );
+    })
+    .then((updatedBucket) => {
+      console.log(">>>>>>>> UPDATED BUCKET", updatedBucket),
+        res.json(updatedBucket);
+    })
+    .catch((err) => {
+      console.log("error adding kicks to bucket", err);
+      res.status(500).json({
+        message: "error adding kicks to bucket",
+        error: err,
+      });
+    });
+});
 
 //DELETE - api/kick/:kickid - only the person that created the kick can delete it
 router.delete("/kick/:kickId", isAuthenticated, (req, res, next) => {
@@ -130,18 +134,15 @@ router.delete("/kick/:kickId", isAuthenticated, (req, res, next) => {
 
   Kicks.findById(kickId)
     .then((response) => {
-
       response.createdBy == req.payload._id
         ? Kicks.findByIdAndRemove(kickId).then((deletedKick) =>
             res.json({
               message: `The kick with id ${kickId} has now been deleted`,
             })
           )
-        : res
-            .status(403)
-            .json({
-              message: "Only the user that created the kcik can edit it",
-            });
+        : res.status(403).json({
+            message: "Only the user that created the kick can edit it",
+          });
     })
     .catch((err) => {
       console.log("error deleting kick", err);
