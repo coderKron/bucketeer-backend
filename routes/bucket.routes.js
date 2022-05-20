@@ -12,7 +12,7 @@ const {cloudinaryStorage} = require("multer-storage-cloudinary")
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const parser = multer({ storage: cloudinaryStorage })
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -21,7 +21,6 @@ cloudinary.config({
 });
 
 const storage = new CloudinaryStorage({
-  // cloudinary: cloudinary,
   cloudinary,
   params: {
     allowed_formats: ['jpg', 'png'],
@@ -30,20 +29,20 @@ const storage = new CloudinaryStorage({
   }
 });
 
-// storage: storage
-module.exports = multer({ storage });
+const parser = multer({ storage: storage })
 
 
 //POST - api/bucket  - create a new bucket
-router.post("/bucket", isAuthenticated, parser.single("pictures"), (req, res, next) => {
+router.post("/bucket", isAuthenticated, parser.single("picture"), (req, res, next) => {
   const { name, description} = req.body;
-  const pictures = req.file.path
-    console.log(">>>>>>>", req.payload._id);
+  const picture = req.file?.path;
+  console.log(">>>>>>>", req.payload._id);
+  console.log(req.file.path);
 
   const newBucket = {
     name,
     description,
-    pictures,
+    picture,
     kicks: [],
     likes: [],
     user: req.payload._id,
@@ -52,6 +51,7 @@ router.post("/bucket", isAuthenticated, parser.single("pictures"), (req, res, ne
 
   Bucket.create(newBucket)
     .then((response) => {
+     
       console.log(response);
       // console.log(">>>>>>>", req.payload);
       res.status(201).json(response);
@@ -145,5 +145,7 @@ router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
 
 
 
+// storage: storage
+module.exports = multer({ storage });
 
 module.exports = router;
