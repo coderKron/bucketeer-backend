@@ -90,6 +90,35 @@ router.put("/kick/:kickId", isAuthenticated, (req, res, next) => {
     });
 });
 
+
+// PUT - api/kick/:kickId/add - User can add ANY kick to the specified 
+
+router.put("/kick/:kickId/add", isAuthenticated, (req, res, next) => {
+    const {kickId} = req.params
+    const {bucketId} = req.body
+    
+
+    if (!mongoose.Types.ObjectId.isValid(kickId)) {
+        res.status(400).json({ message: "Specified id is not valid" });
+        return;
+      }
+    
+    Kicks.findById(kickId)
+        .then(kick => {
+          console.log(kick);
+          Bucket.findByIdAndUpdate(bucketId, {$push: {kick: kick._id}}, {new:true}) 
+          })
+        .then(updatedBucket => res.json(updatedBucket))   
+        .catch((err) => {
+            console.log("error adding kicks to bucket", err);
+            res.status(500).json({
+              message: "error adding kicks to bucket",
+              error: err,
+            });
+          });
+})
+
+
 //DELETE - api/kick/:kickid - only the person that created the kick can delete it
 router.delete("/kick/:kickId", isAuthenticated, (req, res, next) => {
   const { kickId } = req.params;
