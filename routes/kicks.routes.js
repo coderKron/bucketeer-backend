@@ -7,17 +7,42 @@ const User = require("../models/User.model");
 const { isAuthenticated } = require("../middleware/jwt.middelware");
 const { response } = require("../app");
 
+// config/cloudinary.config.js
+
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const multer = require('multer');
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    allowed_formats: ['jpg', 'png'],
+    folder: 'bucketeers' // The name of the folder in cloudinary
+    // resource_type: 'raw' => this is in case you want to upload other type of files, not just images
+  }
+});
+
+const parser = multer({ storage: storage })
+
 // POST - api/kicks - create a new kick
 
-router.post("/kick", isAuthenticated, (req, res, next) => {
+router.post("/kick", isAuthenticated, parser.single("pictures"), (req, res, next) => {
   const { name, location, category, description, buckets } = req.body;
+  const pictures = req.file?.path
 
   const newKick = {
     name,
     location,
     category,
     description,
-    pictures: [],
+    pictures,
     buckets: [],
     createdBy: req.payload._id,
     doneBy: [],
@@ -153,4 +178,5 @@ router.delete("/kick/:kickId", isAuthenticated, (req, res, next) => {
     });
 });
 
+module.exports = multer({ storage });
 module.exports = router;
