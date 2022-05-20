@@ -4,6 +4,7 @@ const { default: mongoose } = require("mongoose");
 const Bucket = require("../models/Bucket.model");
 const Kicks = require("../models/Kicks.model");
 const { isAuthenticated } = require("../middleware/jwt.middelware");
+import cloudinary from '../config/cloudinary.config'
 
 //POST - api/bucket  - create a new bucket
 router.post("/bucket", isAuthenticated, (req, res, next) => {
