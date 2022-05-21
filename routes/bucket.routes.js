@@ -4,66 +4,77 @@ const { default: mongoose } = require("mongoose");
 const Bucket = require("../models/Bucket.model");
 const Kicks = require("../models/Kicks.model");
 const { isAuthenticated } = require("../middleware/jwt.middelware");
-const {cloudinaryStorage} = require("multer-storage-cloudinary")
-
+const { cloudinaryStorage } = require("multer-storage-cloudinary");
 
 // config/cloudinary.config.js
 
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const multer = require('multer');
-
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require("multer");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
-  api_secret: process.env.CLOUDINARY_SECRET
+  api_secret: process.env.CLOUDINARY_SECRET,
 });
 
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    allowed_formats: ['jpg', 'png'],
-    folder: 'bucketeers' // The name of the folder in cloudinary
+    allowed_formats: ["jpg", "png"],
+    folder: "bucketeers", // The name of the folder in cloudinary
     // resource_type: 'raw' => this is in case you want to upload other type of files, not just images
-  }
+  },
 });
 
-const parser = multer({ storage: storage })
-
+const parser = multer({ storage: storage });
 
 //POST - api/bucket  - create a new bucket
-router.post("/bucket", isAuthenticated, parser.single("picture"), (req, res, next) => {
-  const { name, description} = req.body;
-  const picture = req.file?.path;
-  console.log(">>>>>>>", req.payload._id);
-  console.log(req.file.path);
+router.post(
+  "/bucket",
+  isAuthenticated,
+  parser.single("picture"),
+  (req, res, next) => {
+    const { name, description, picture } = req.body;
+    console.log(">>>>>>>", req.payload._id);
 
-  const newBucket = {
-    name,
-    description,
-    picture,
-    kicks: [],
-    likes: [],
-    user: req.payload._id,
-    comments: [{}],
-  };
+    const newBucket = {
+      name,
+      description,
+      picture,
+      kicks: [],
+      likes: [],
+      user: req.payload._id,
+      comments: [{}],
+    };
+    console.log(newBucket, picture);
 
-  Bucket.create(newBucket)
-    .then((response) => {
-     
-      console.log(response);
-      // console.log(">>>>>>>", req.payload);
-      res.status(201).json(response);
-    })
-    .catch((err) => {
-      console.log("Error creating a new bucket", err);
-      res.status(500).json({
-        message: "error creating new bucket",
-        error: err,
+    Bucket.create(newBucket)
+      .then((response) => {
+        console.log(response);
+        // console.log(">>>>>>>", req.payload);
+        res.status(201).json(response);
+      })
+      .catch((err) => {
+        console.log("Error creating a new bucket", err);
+        res.status(500).json({
+          message: "error creating new bucket",
+          error: err,
+        });
       });
-    });
-});
+  }
+);
+
+router.post(
+  "/upload",
+  parser.single("picture"),
+  isAuthenticated,
+  (req, res, next) => {
+    console.log("file is: ", req.file);
+
+    res.json({ secure_url: req.file.path });
+  }
+);
 
 //GET - api/bucket - Get a list of buckets based on the user
 
@@ -72,6 +83,29 @@ router.get("/bucket", isAuthenticated, (req, res, next) => {
     .populate("kicks")
     .then((response) => {
       res.json(response);
+    })
+    .catch((err) => {
+      console.log("error getting list of buckets", err);
+      res.status(500).json({
+        message: "error getting list of buckets",
+        error: err,
+      });
+    });
+});
+
+router.get("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
+  const bucketId = req.params.bucketId;
+  console.log(bucketId);
+  Bucket.findById(bucketId)
+    .populate("kicks")
+    .then((response) => {
+      if (response.user == req.payload._id) {
+        res.json(response);
+      } else {
+        res.status(403).json({
+          message: "Only the user that created the bucket can see it",
+        });
+      }
     })
     .catch((err) => {
       console.log("error getting list of buckets", err);
@@ -142,8 +176,6 @@ router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
       });
     });
 });
-
-
 
 // storage: storage
 module.exports = multer({ storage });

@@ -10,15 +10,13 @@ const { response } = require("../app");
 // POST - api/kicks - create a new kick
 
 router.post("/kick", isAuthenticated, (req, res, next) => {
-  const { name, location, category, description, buckets } = req.body;
-
+  const { name, location, category, description, buckets, picture } = req.body;
   const newKick = {
     name,
     location,
     category,
     description,
-    pictures: [],
-    buckets: [],
+    pictures: picture,
     createdBy: req.payload._id,
     doneBy: [],
     likes: [],
@@ -27,7 +25,18 @@ router.post("/kick", isAuthenticated, (req, res, next) => {
   Kicks.create(newKick)
     .then((response) => {
       console.log(req.payload);
+
       res.status(201).json(response);
+      return response;
+    })
+    .then((response) => {
+      console.log(response);
+      console.log(buckets);
+      return Bucket.findByIdAndUpdate(
+        buckets,
+        { $addToSet: { kicks: response._id } },
+        { new: true }
+      );
     })
 
     .catch((err) => {
@@ -52,6 +61,16 @@ router.get("/kick", (req, res, next) => {
         message: "error getting list of kicks",
         error: err,
       });
+    });
+});
+
+router.get("/kick/:kickId", (req, res, next) => {
+  Kicks.findById(req.params.kickId)
+    .then((response) => {
+      res.json(response);
+    })
+    .catch((error) => {
+      console.log(error);
     });
 });
 
