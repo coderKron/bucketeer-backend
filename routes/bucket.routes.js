@@ -78,7 +78,59 @@ router.get("/bucket", isAuthenticated, (req, res, next) => {
     });
 });
 
-//PUT - api/bucket/:bucketid - Update bucket -  only the user that created it can do this
+router.get("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
+  const bucketId = req.params.bucketId;
+  console.log(bucketId);
+  Bucket.findById(bucketId)
+    .populate("kicks")
+    .then((response) => {
+      if (response.user == req.payload._id) {
+        res.json(response);
+      } else {
+        res.status(403).json({
+          message: "Only the user that created the bucket can see it",
+        });
+      }
+    })
+    .catch((err) => {
+      console.log("error getting list of buckets", err);
+      res.status(500).json({
+        message: "error getting list of buckets",
+        error: err,
+      });
+    });
+});
+
+//PUT - api/bucket/:bucketid - Update bucket-kicks when you are in kicks list -  only the user that created it can do this
+router.put("/bucket/:bucketId/add", isAuthenticated, (req, res, next) => {
+  const { bucketId } = req.params;
+  const kickId = req.body.kickId;
+  if (!mongoose.Types.ObjectId.isValid(bucketId)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
+
+  Bucket.findById(bucketId)
+    .then((response) => {
+      response.user == req.payload._id
+        ? Bucket.findByIdAndUpdate(
+            bucketId,
+            { $addToSet: { kicks: kickId } },
+            { new: true }
+          ).then((updatedBucket) => res.json(updatedBucket))
+        : res.status(403).json({
+            message: "Only the user that created the bucket can edit it",
+          });
+    })
+
+    .catch((err) => {
+      console.log("error updating bucket", err);
+      res.status(500).json({
+        message: "error updating bucket",
+        error: err,
+      });
+    });
+});
 
 router.put("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
   const { bucketId } = req.params;
@@ -107,6 +159,39 @@ router.put("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
       });
     });
 });
+router.put(
+  "/bucket/:bucketId/remove/kick",
+  isAuthenticated,
+  (req, res, next) => {
+    const { bucketId } = req.params;
+    console.log(req.body);
+    if (!mongoose.Types.ObjectId.isValid(bucketId)) {
+      res.status(400).json({ message: "Specified id is not valid" });
+      return;
+    }
+
+    Bucket.findById(bucketId)
+      .then((response) => {
+        response.user == req.payload._id
+          ? Bucket.findByIdAndUpdate(
+              bucketId,
+              { $pull: { kicks: req.body.kickId } },
+              { new: true }
+            ).then((updatedBucket) => res.json(updatedBucket))
+          : res.status(403).json({
+              message: "Only the user that created the bucket can edit it",
+            });
+      })
+
+      .catch((err) => {
+        console.log("error updating bucket", err);
+        res.status(500).json({
+          message: "error updating bucket",
+          error: err,
+        });
+      });
+  }
+);
 
 //DELETE - api/bucket/:bucketid - only the person that created the bucket can delete it
 router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
