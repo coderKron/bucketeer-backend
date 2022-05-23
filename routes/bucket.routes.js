@@ -34,8 +34,8 @@ router.post(
   isAuthenticated,
   parser.single("picture"),
   (req, res, next) => {
-    const { name, description } = req.body;
-    const picture = req.file?.path;
+    const { name, description, picture } = req.body;
+    console.log(">>>>>>>", req.payload._id);
 
     const newBucket = {
       name,
@@ -46,9 +46,12 @@ router.post(
       user: req.payload._id,
       comments: [{}],
     };
+    console.log(newBucket, picture);
 
     Bucket.create(newBucket)
       .then((response) => {
+        console.log(response);
+        // console.log(">>>>>>>", req.payload);
         res.status(201).json(response);
       })
       .catch((err) => {
@@ -61,6 +64,16 @@ router.post(
   }
 );
 
+router.post(
+  "/upload",
+  parser.single("picture"),
+  isAuthenticated,
+  (req, res, next) => {
+    console.log("file is: ", req.file);
+
+    res.json({ secure_url: req.file.path });
+  }
+);
 //GET - api/bucket - Get a list of buckets based on the user
 
 router.get("/bucket", isAuthenticated, (req, res, next) => {
@@ -195,7 +208,7 @@ router.put(
 
 //DELETE - api/bucket/:bucketid - only the person that created the bucket can delete it
 router.delete("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
-  const { bucketId } = req.params;
+  const bucketId = req.params.bucketId;
 
   if (!mongoose.Types.ObjectId.isValid(bucketId)) {
     res.status(400).json({ message: "Specified id is not valid" });
