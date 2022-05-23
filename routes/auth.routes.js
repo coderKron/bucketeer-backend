@@ -12,14 +12,12 @@ const capitalize = require("../scripts/functions/capitalize");
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { userName, email, password } = req.body;
+  const { userName, email, password, tagline } = req.body;
 
   // Check if email or password or name are provided as empty string
   if (email === "" || password === "" || userName === "") {
     console.log(req.body);
-    res
-      .status(400)
-      .json({ message: "Provide email, password, username" });
+    res.status(400).json({ message: "Provide email, password, username" });
     return;
   }
 
@@ -43,19 +41,19 @@ router.post("/signup", (req, res, next) => {
   }
 
   // Check if a user with the same email already exists
-  User.findOne({ email })
-    .then((foundUser) => {
-      if (foundUser) {
-        res.status(400).json({ message: "Email already exists on our system." });
-        return;
-      }
-    })
-    
+  User.findOne({ email }).then((foundUser) => {
+    if (foundUser) {
+      res.status(400).json({ message: "Email already exists on our system." });
+      return;
+    }
+  });
 
   User.findOne({ userName })
     .then((foundUser) => {
       if (foundUser) {
-        res.status(400).json({ message: "UserName already exists on our system." });
+        res
+          .status(400)
+          .json({ message: "UserName already exists on our system." });
         return;
       }
 
@@ -69,16 +67,16 @@ router.post("/signup", (req, res, next) => {
         userName,
         email,
         password: hashedPassword,
-        profilePicture,
-        way,
-        tagline
+        tagline,
       });
     })
     .then((createdUser) => {
-      const { _id, userName, email, profilePicture, way, tagline } = createdUser;
+      console.log(createdUser);
+      const { _id, userName, way, profilePicture, email, tagline } =
+        createdUser;
 
       // Create a new object that doesn't expose the password
-      const user = { _id, userName, email, profilePicture, way, tagline };
+      const user = { _id, userName, way, profilePicture, email, tagline };
 
       // Send a json response containing the user object
       res.status(201).json({ user: user });
@@ -109,7 +107,8 @@ router.post("/login", (req, res, next) => {
 
       if (passwordCorrect) {
         // Deconstruct the user object to omit the password
-        const { _id, userName, email, profilePicture, way, tagline } = foundUser;
+        const { _id, userName, email, profilePicture, way, tagline } =
+          foundUser;
 
         // Create an object that will be set as the token payload
         const payload = { _id, userName, email, profilePicture, way, tagline };
