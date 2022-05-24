@@ -19,7 +19,7 @@ const kicksSchema = new Schema(
         "Middle-East",
         "South-America",
       ],
-      required: true,
+      required: [true, "Continent is a required field."],
     },
     location: {
       lat: { type: String },
