@@ -40,6 +40,7 @@ router.post(
     const { name, location, country, category, description, buckets} = req.body;
     const pictures = req.file?.path;
 
+
     const newKick = {
       name,
       location,
