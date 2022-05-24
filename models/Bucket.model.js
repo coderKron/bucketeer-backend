@@ -12,8 +12,15 @@ const bucketSchema = new Schema(
       type: String,
       required: true,
     },
-    picture: String,  
-    
+    continent: {
+      type: String,
+      enum: ["Antarctica", "Australia", "Asia", "Africa", "Europe", "North America", "Europe"],
+      required: true,
+    },
+    picture: {
+      type: String,
+      required: true,
+    },  
     kicks: [
       {
         type: mongoose.Schema.Types.ObjectId,
