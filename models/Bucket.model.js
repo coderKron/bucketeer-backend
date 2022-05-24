@@ -12,11 +12,6 @@ const bucketSchema = new Schema(
       type: String,
       required: true,
     },
-    continent: {
-      type: String,
-      enum: ["Antarctica", "Australia", "Asia", "Africa", "Europe", "North America", "Europe"],
-      required: true,
-    },
     picture: {
       type: String,
       required: true,
