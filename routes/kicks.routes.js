@@ -9,71 +9,75 @@ const { response } = require("../app");
 
 // config/cloudinary.config.js
 
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const multer = require('multer');
-
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require("multer");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
-  api_secret: process.env.CLOUDINARY_SECRET
+  api_secret: process.env.CLOUDINARY_SECRET,
 });
 
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    allowed_formats: ['jpg', 'png'],
-    folder: 'bucketeers' // The name of the folder in cloudinary
+    allowed_formats: ["jpg", "png"],
+    folder: "bucketeers", // The name of the folder in cloudinary
     // resource_type: 'raw' => this is in case you want to upload other type of files, not just images
-  }
+  },
 });
 
-const parser = multer({ storage: storage })
+const parser = multer({ storage: storage });
 
 // POST - api/kicks - create a new kick
 
-router.post("/kick", isAuthenticated, parser.single("pictures"), (req, res, next) => {
-  const { name, location, category, description, buckets } = req.body;
-  const pictures = req.file?.path
+router.post(
+  "/kick",
+  isAuthenticated,
+  parser.single("pictures"),
+  (req, res, next) => {
+    const { name, location, category, description, buckets } = req.body;
+    const pictures = req.file?.path;
 
-  const newKick = {
-    name,
-    location,
-    category,
-    description,
-    pictures,
-    buckets: [],
-    createdBy: req.payload._id,
-    doneBy: [],
-    likes: [],
-  };
+    const newKick = {
+      name,
+      location,
+      category,
+      description,
+      pictures,
+      buckets: [],
+      createdBy: req.payload._id,
+      doneBy: [],
+      likes: [],
+    };
 
-  Kicks.create(newKick)
-    .then((response) => {
-      console.log(req.payload);
+    Kicks.create(newKick)
+      .then((response) => {
+        console.log(req.payload);
 
-      res.status(201).json(response);
-      return response;
-    })
-    .then((response) => {
-      console.log(response);
-      console.log(buckets);
-      return Bucket.findByIdAndUpdate(
-        buckets,
-        { $addToSet: { kicks: response._id } },
-        { new: true }
-      );
-    })
+        res.status(201).json(response);
+        return response;
+      })
+      .then((response) => {
+        console.log(response);
+        console.log(buckets);
+        return Bucket.findByIdAndUpdate(
+          buckets,
+          { $addToSet: { kicks: response._id } },
+          { new: true }
+        );
+      })
 
-    .catch((err) => {
-      console.log("Error creating a new kick", err);
-      res.status(500).json({
-        message: "error creating new kick",
-        error: err,
+      .catch((err) => {
+        console.log("Error creating a new kick", err);
+        res.status(500).json({
+          message: "error creating new kick",
+          error: err,
+        });
       });
-    });
-});
+  }
+);
 
 // GET - api/kick - Display all Kicks
 
@@ -91,8 +95,9 @@ router.get("/kick", (req, res, next) => {
     });
 });
 
-router.get("/kick/:kickId", (req, res, next) => {
-  Kicks.findById(req.params.kickId)
+router.get("/kick/:kickId", isAuthenticated, (req, res, next) => {
+  const kickId = req.params.kickId;
+  Kicks.findById(kickId)
     .then((response) => {
       res.json(response);
     })
@@ -103,37 +108,42 @@ router.get("/kick/:kickId", (req, res, next) => {
 
 // PUT - api/kick/:kickId - Update a Kick - only the user that created it can do this
 
-router.put("/kick/:kickId", isAuthenticated, (req, res, next) => {
-  const { kickId } = req.params;
-  let kick;
-  if (!mongoose.Types.ObjectId.isValid(kickId)) {
-    res.status(400).json({ message: "Specified id is not valid" });
-    return;
-  }
+router.put(
+  "/kick/:kickId",
+  parser.single("picture"),
+  isAuthenticated,
+  (req, res, next) => {
+    const { kickId } = req.params;
+    let kick;
+    if (!mongoose.Types.ObjectId.isValid(kickId)) {
+      res.status(400).json({ message: "Specified id is not valid" });
+      return;
+    }
 
-  Kicks.findById(kickId)
-    //   .populate("createdBy")
-    .then((response) => {
-      //     kick = response
-      //      return User.findById(req.payload._id)})
-      // .then(user => {
-      //     if (kick.createdBy == user._id){
-      response.createdBy == req.payload._id
-        ? Kicks.findByIdAndUpdate(kickId, req.body, { new: true }).then(
-            (updatedKick) => res.json(updatedKick)
-          )
-        : res.status(403).json({
-            message: "Only the user that created the kick can edit it",
-          });
-    })
-    .catch((err) => {
-      console.log("error updating kick", err);
-      res.status(500).json({
-        message: "error updating kick",
-        error: err,
+    Kicks.findById(kickId)
+      //   .populate("createdBy")
+      .then((response) => {
+        //     kick = response
+        //      return User.findById(req.payload._id)})
+        // .then(user => {
+        //     if (kick.createdBy == user._id){
+        response.createdBy == req.payload._id
+          ? Kicks.findByIdAndUpdate(kickId, req.body, { new: true }).then(
+              (updatedKick) => res.json(updatedKick)
+            )
+          : res.status(403).json({
+              message: "Only the user that created the kick can edit it",
+            });
+      })
+      .catch((err) => {
+        console.log("error updating kick", err);
+        res.status(500).json({
+          message: "error updating kick",
+          error: err,
+        });
       });
-    });
-});
+  }
+);
 
 // PUT - api/kick/:kickId/add - User can add ANY kick to the specified
 
