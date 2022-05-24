@@ -37,9 +37,15 @@ router.post(
   isAuthenticated,
   parser.single("pictures"),
   (req, res, next) => {
-    const { name, location, country, category, description, buckets} = req.body;
-    const pictures = req.file?.path;
-
+    const {
+      name,
+      location,
+      country,
+      category,
+      description,
+      pictures,
+      buckets,
+    } = req.body;
 
     const newKick = {
       name,
@@ -52,7 +58,6 @@ router.post(
       createdBy: req.payload._id,
       doneBy: [],
       likes: [],
-      
     };
 
     Kicks.create(newKick)
