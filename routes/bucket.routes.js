@@ -34,12 +34,13 @@ router.post(
   isAuthenticated,
   parser.single("picture"),
   (req, res, next) => {
-    const { name, description, picture } = req.body;
+    const { name, description, continent, picture } = req.body;
     console.log(">>>>>>>", req.payload._id);
 
     const newBucket = {
       name,
       description,
+      continent,
       picture,
       kicks: [],
       likes: [],
