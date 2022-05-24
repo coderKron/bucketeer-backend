@@ -9,15 +9,23 @@ const kicksSchema = new Schema(
     },
     continent: {
       type: String,
-      enum: ["Antarctica", "Australia", "Asia", "Africa", "Europe", "North America", "Europe"],
+      enum: [
+        "Antarctica",
+        "Australia",
+        "Asia",
+        "Africa",
+        "Europe",
+        "North-America",
+        "Middle-East",
+        "South-America",
+      ],
       required: true,
     },
-    location: [
-      {
-        lat: {type: String}, 
-        lng: {type: String}
-      }
-    ],
+    location: {
+      lat: { type: String },
+      lng: { type: String },
+    },
+
     country: String,
     category: {
       type: String,
