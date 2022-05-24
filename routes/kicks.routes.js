@@ -37,8 +37,8 @@ router.post(
   isAuthenticated,
   parser.single("pictures"),
   (req, res, next) => {
-    const { name, location, category, description, buckets } = req.body;
-    const pictures = req.file?.path;
+    const { name, location, category, pictures, description, buckets } =
+      req.body;
 
     const newKick = {
       name,
