@@ -32,60 +32,48 @@ const parser = multer({ storage: storage });
 
 // POST - api/kicks - create a new kick
 
-router.post(
-  "/kick",
-  isAuthenticated,
-  parser.single("pictures"),
-  (req, res, next) => {
-    const {
-      name,
-      location,
-      country,
-      category,
-      description,
-      pictures,
-      buckets,
-    } = req.body;
+router.post("/kick", isAuthenticated, (req, res, next) => {
+  const { name, location, country, category, description, pictures, buckets } =
+    req.body;
 
-    const newKick = {
-      name,
-      location,
-      country,
-      category,
-      description,
-      pictures,
-      buckets: [],
-      createdBy: req.payload._id,
-      doneBy: [],
-      likes: [],
-    };
+  const newKick = {
+    name,
+    location,
+    country,
+    category,
+    description,
+    pictures,
+    buckets: [],
+    createdBy: req.payload._id,
+    doneBy: [],
+    likes: [],
+  };
 
-    Kicks.create(newKick)
-      .then((response) => {
-        console.log(req.payload);
+  Kicks.create(newKick)
+    .then((response) => {
+      console.log(req.payload);
 
-        res.status(201).json(response);
-        return response;
-      })
-      .then((response) => {
-        console.log(response);
-        console.log(buckets);
-        return Bucket.findByIdAndUpdate(
-          buckets,
-          { $addToSet: { kicks: response._id } },
-          { new: true }
-        );
-      })
+      res.status(201).json(response);
+      return response;
+    })
+    .then((response) => {
+      console.log(response);
+      console.log(buckets);
+      return Bucket.findByIdAndUpdate(
+        buckets,
+        { $addToSet: { kicks: response._id } },
+        { new: true }
+      );
+    })
 
-      .catch((err) => {
-        console.log("Error creating a new kick", err);
-        res.status(500).json({
-          message: "error creating new kick",
-          error: err,
-        });
+    .catch((err) => {
+      console.log("Error creating a new kick", err);
+      res.status(500).json({
+        message: "error creating new kick",
+        error: err,
       });
-  }
-);
+    });
+});
 
 // GET - api/kick - Display all Kicks
 

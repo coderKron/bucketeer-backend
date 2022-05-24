@@ -64,9 +64,10 @@ router.post(
   }
 );
 
+//POST - to create an image file inside of cloudinary and return it's url to the user in front end.
 router.post(
   "/upload",
-  parser.single("picture"),
+  parser.single("pictures"),
   isAuthenticated,
   (req, res, next) => {
     console.log("file is: ", req.file);
@@ -74,6 +75,7 @@ router.post(
     res.json({ secure_url: req.file.path });
   }
 );
+
 //GET - api/bucket - Get a list of buckets based on the user
 
 router.get("/bucket", isAuthenticated, (req, res, next) => {
@@ -177,6 +179,8 @@ router.put(
       });
   }
 );
+
+//PUT - to remove kicks from a bucket's details.
 router.put(
   "/bucket/:bucketId/remove/kick",
 
