@@ -33,11 +33,12 @@ const parser = multer({ storage: storage });
 // POST - api/kicks - create a new kick
 
 router.post("/kick", isAuthenticated, (req, res, next) => {
-  const { name, location, country, category, description, pictures, buckets } =
+  const { name, continent, location, country, category, description, pictures, buckets } =
     req.body;
 
   const newKick = {
     name,
+    continent,
     location,
     country,
     category,
