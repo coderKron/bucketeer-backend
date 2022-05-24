@@ -1,6 +1,5 @@
 const { Schema, model } = require("mongoose");
-const {default: mongoose} = require('mongoose')
-
+const { default: mongoose } = require("mongoose");
 
 const kicksSchema = new Schema(
   {
@@ -8,7 +7,12 @@ const kicksSchema = new Schema(
       type: String,
       required: true,
     },
-    location: {type: {type:String}, coordinates: [Number]},
+    location: [
+      {
+        lat: {type: String}, 
+        lng: {type: String}
+      }
+    ],
     country: String,
     category: {
       type: String,
