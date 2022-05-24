@@ -9,6 +9,7 @@ const kicksSchema = new Schema(
       required: true,
     },
     location: {type: {type:String}, coordinates: [Number]},
+    country: String,
     category: {
       type: String,
       enum: ["Travel", "Chill", "Activity"],
