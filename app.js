@@ -20,8 +20,10 @@ const allRoutes = require("./routes/index.routes");
 app.use("/api", allRoutes);
 app.use("/auth", require("./routes/auth.routes"));
 app.use("/api", require("./routes/bucket.routes"));
-app.use("/api", require("./routes/kicks.routes"))
-app.use("/api", require("./routes/user.routes"))
+app.use("/api", require("./routes/kicks.routes"));
+app.use("/api", require("./routes/user.routes"));
+app.use("/api", require("./routes/journal.routes"))
+app.use("/api", require("./routes/story.routes"))
 
 const authRouter = require("./routes/auth.routes"); //  <== IMPORT
 app.use("/auth", authRouter);
