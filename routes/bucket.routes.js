@@ -35,7 +35,7 @@ router.post(
   parser.single("picture"),
   (req, res, next) => {
     const { name, description, picture } = req.body;
-    console.log(">>>>>>>", req.payload._id);
+  
 
     const newBucket = {
       name,
@@ -46,7 +46,7 @@ router.post(
       user: req.payload._id,
       comments: [{}],
     };
-    console.log(newBucket, picture);
+
 
     Bucket.create(newBucket)
       .then((response) => {
