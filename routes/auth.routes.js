@@ -89,8 +89,8 @@ router.post("/signup", (req, res, next) => {
 
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
-  const { email, password } = req.body;
-
+  const { email, password, rememberMe } = req.body;
+  console.log(rememberMe);
   if (email === "" || password === "") {
     res.status(400).json({ message: "Invalid credentials." });
     return;
@@ -105,7 +105,7 @@ router.post("/login", (req, res, next) => {
 
       const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
 
-      if (passwordCorrect) {
+      if (passwordCorrect && rememberMe) {
         // Deconstruct the user object to omit the password
         const { _id, userName, email, profilePicture, way, tagline } =
           foundUser;
@@ -114,9 +114,27 @@ router.post("/login", (req, res, next) => {
         const payload = { _id, userName, email, profilePicture, way, tagline };
 
         // Create and sign the token
+
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
           algorithm: "HS256",
-          expiresIn: "6h",
+          expiresIn: "336h",
+        });
+
+        // Send the token as the response
+        res.status(200).json({ authToken: authToken });
+      } else if (passwordCorrect && !rememberMe) {
+        // Deconstruct the user object to omit the password
+        const { _id, userName, email, profilePicture, way, tagline } =
+          foundUser;
+
+        // Create an object that will be set as the token payload
+        const payload = { _id, userName, email, profilePicture, way, tagline };
+
+        // Create and sign the token
+
+        const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+          algorithm: "HS256",
+          expiresIn: "1h",
         });
 
         // Send the token as the response
