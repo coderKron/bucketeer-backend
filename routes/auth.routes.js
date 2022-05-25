@@ -92,14 +92,14 @@ router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
 
   if (email === "" || password === "") {
-    res.status(400).json({ message: "Provide email and password." });
+    res.status(400).json({ message: "Invalid credentials." });
     return;
   }
 
   User.findOne({ email })
     .then((foundUser) => {
       if (!foundUser) {
-        res.status(401).json({ message: "User not found." });
+        res.status(401).json({ message: "Invalid credentials." });
         return;
       }
 
@@ -122,7 +122,9 @@ router.post("/login", (req, res, next) => {
         // Send the token as the response
         res.status(200).json({ authToken: authToken });
       } else {
-        res.status(401).json({ message: "Sign in details are incorrect, please try again" });
+        res
+          .status(401)
+          .json({ message: "Sign in details are incorrect, please try again" });
       }
     })
     .catch((err) =>
