@@ -33,60 +33,60 @@ router.post("/journal", isAuthenticated, (req, res, next) => {
     });
 });
 
-
 //GET - api/journal - get a list of all journals, that are public
 
 router.get("/journal/public", (req, res, next) => {
-  Journal.find({visibility: 'Public'})
-  .then((response) => {
-    res.json(response);
-  })
-  .catch((err) => {
-    console.log("error getting list of journals", err);
-    res.status(500).json({
-      message: "error getting list of journals",
-      error: err,
+  Journal.find({ visibility: "Public" })
+    .populate("createdBy")
+    .populate("story")
+    .then((response) => {
+      res.json(response);
+    })
+    .catch((err) => {
+      console.log("error getting list of journals", err);
+      res.status(500).json({
+        message: "error getting list of journals",
+        error: err,
+      });
     });
-  });
-})
+});
 
 //GET - api/journal/:userId - get a list of all journals for a user
 
 router.get("/journal/private", isAuthenticated, (req, res, next) => {
   const userId = req.payload._id;
 
-  Journal.find({user: userId})
-  .then((response) => {
-    res.json(response);
-  })
-  .catch((err) => {
-    console.log("error getting list of journals", err);
-    res.status(500).json({
-      message: "error getting list of journals",
-      error: err,
+  Journal.find({ user: userId })
+    .populate("story")
+    .then((response) => {
+      res.json(response);
+    })
+    .catch((err) => {
+      console.log("error getting list of journals", err);
+      res.status(500).json({
+        message: "error getting list of journals",
+        error: err,
+      });
     });
-  });
-})
-
-
-//GET - api/journal/:journalId - get a single journal 
-
-router.get("/journal/:journalId", isAuthenticated, (req, res, next) => {
-  const journalId = req.params.journalId
-  Journal.findById(journalId)
-  .populate("story")
-  .then((response) => {
-    res.json(response);
-  })
-  .catch((err) => {
-    console.log("error getting the journal", err);
-    res.status(500).json({
-      message: "error getting the journal",
-      error: err,
-    });
-  });
 });
 
+//GET - api/journal/:journalId - get a single journal
+
+router.get("/journal/:journalId", (req, res, next) => {
+  const journalId = req.params.journalId;
+  Journal.findById(journalId)
+    .populate("story")
+    .then((response) => {
+      res.json(response);
+    })
+    .catch((err) => {
+      console.log("error getting the journal", err);
+      res.status(500).json({
+        message: "error getting the journal",
+        error: err,
+      });
+    });
+});
 
 //PUT - api/journal/:journalId - update journal
 
