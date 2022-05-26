@@ -95,12 +95,13 @@ router.get("/bucket", isAuthenticated, (req, res, next) => {
 
 router.get("/bucket/:bucketId", isAuthenticated, (req, res, next) => {
   const bucketId = req.params.bucketId;
-  console.log(bucketId);
   Bucket.findById(bucketId)
     .populate("kicks")
     .then((response) => {
+      console.log(">>>>>>", response.kicks)
       if (response.user == req.payload._id) {
         res.json(response);
+        
       } else {
         res.status(403).json({
           message: "Only the user that created the bucket can see it",
