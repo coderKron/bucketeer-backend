@@ -44,6 +44,7 @@ router.post(
       journalId,
       content,
       pictures,
+      createdBy: req.payload._id,
     };
     Journal.findById(journalId)
       .then((response) => {
@@ -80,6 +81,37 @@ router.get('/story/:journalId', isAuthenticated, (req, res, next) => {
     console.log("error getting list of storys", err);
     res.status(500).json({
       message: "error getting list of storys",
+      error: err,
+    });
+  });
+})
+
+//DELETE - api/story/:storyId - delete story - only user that created the story can delete it
+
+router.delete("/story/:storyId", isAuthenticated, (req, res, next) => {
+  const storyId = req.params.storyId
+
+  if (!mongoose.Types.ObjectId.isValid(journalId)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
+
+  Story.findById(storyId)
+  .then((response) => {
+    response.createdBy == req.payload._id
+    ? Story.findByIdAndDelete(storyId).then((deletedStory) => 
+    res.json({
+      message: `The story with the id ${storyId} was deleted`,
+    })
+    )
+    : res.status(403).json({
+      message: "Only the user that created the story can delete it"
+    })
+  })
+  .catch((err) => {
+    console.log("error deleting the story", err);
+    res.status(500).json({
+      message: "error deleted the story",
       error: err,
     });
   });
