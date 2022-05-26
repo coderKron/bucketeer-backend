@@ -115,6 +115,13 @@ router.delete("/journal/:journalId", isAuthenticated, (req, res, next) => {
       message: "Only the user that created the Journal can delete it"
     })
   })
+  .catch((err) => {
+    console.log("error deleting the journal", err);
+    res.status(500).json({
+      message: "error deleting the journal",
+      error: err,
+    });
+  });
 })
 
 module.exports = router;
