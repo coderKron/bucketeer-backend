@@ -34,7 +34,39 @@ router.post("/journal", isAuthenticated, (req, res, next) => {
 });
 
 
-//GET - api/journal - get a list a all journal, that are public
+//GET - api/journal - get a list of all journals, that are public
+
+router.get("/journal", (req, res, next) => {
+  Journal.find({visibility: 'Public'})
+  .then((response) => {
+    res.json(response);
+  })
+  .catch((err) => {
+    console.log("error getting list of journals", err);
+    res.status(500).json({
+      message: "error getting list of journals",
+      error: err,
+    });
+  });
+})
+
+//GET - api/journal/:userId - get a list of all journals for a user
+
+router.get("/journal/:userId", (req, res, next) => {
+  const userId = req.params.userId;
+
+  Journal.find({user: userId})
+  .then((response) => {
+    res.json(response);
+  })
+  .catch((err) => {
+    console.log("error getting list of journals", err);
+    res.status(500).json({
+      message: "error getting list of journals",
+      error: err,
+    });
+  });
+})
 
 
 //GET - api/journal/:journalId - get a single journal 
