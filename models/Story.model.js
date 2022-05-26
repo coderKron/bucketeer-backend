@@ -15,6 +15,11 @@ const storySchema = new Schema(
     pictures: {
       type: String,
     },
+
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   {
     timestamps: true,

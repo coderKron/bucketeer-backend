@@ -93,5 +93,33 @@ router.get("/journal/:journalId", (req, res, next) => {
 //PUT - api/journal/:journalId/remove - remove story from a journal
 
 //DELETE - api/journal/:journalId - delete journal
+router.delete("/journal/:journalId", isAuthenticated, (req, res, next) => {
+  const journalId = req.params.journalId;
+
+  if (!mongoose.Types.ObjectId.isValid(journalId)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
+
+  Journal.findById(journalId)
+    .then((response) => {
+      response.createdBy == req.payload._id
+        ? Journal.findByIdAndDelete(journalId).then((deletedJournal) =>
+            res.json({
+              message: `The journal with the id ${journalId} was deleted`,
+            })
+          )
+        : res.status(403).json({
+            message: "Only the user that created the Journal can delete it",
+          });
+    })
+    .catch((err) => {
+      console.log("error deleting the journal", err);
+      res.status(500).json({
+        message: "error deleting the journal",
+        error: err,
+      });
+    });
+});
 
 module.exports = router;
