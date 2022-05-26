@@ -7,17 +7,16 @@ const Journal = require("../models/Journal.model");
 const { isAuthenticated } = require("../middleware/jwt.middelware");
 const { route } = require("../app");
 
-//POST - api/:bucketId/journal - create a new journal
+//POST - api/journal - create a new journal
 
-router.post("/journal/:bucketId", isAuthenticated, (req, res, next) => {
-  const { title, description, visibility } = req.body;
-  const { bucket } = req.params;
+router.post("/journal", isAuthenticated, (req, res, next) => {
+  const { title, description, visibility, bucketId } = req.body;
 
   const newJournal = {
     title,
     description,
     createdBy: req.payload._id,
-    bucket,
+    bucket: bucketId,
     visibility,
   };
 
@@ -36,6 +35,7 @@ router.post("/journal/:bucketId", isAuthenticated, (req, res, next) => {
 
 
 //GET - api/journal - get a list a all journal, that are public
+
 
 //GET - api/journal/:journalId - get a single journal 
 
