@@ -12,6 +12,7 @@ const { response } = require("../app");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
+const { route } = require("./auth.routes");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -149,6 +150,26 @@ router.put(
       });
   }
 );
+
+// GET - api/kick/:bucketId - get kicks from a bucket
+// router.get('/kick/:bucketId', (req, res, next) => {
+//   const bucketId = req.params.bucketId
+
+//  Bucket.findById(bucketId)
+//   .populate("kicks")
+//   .then((bucket) => {
+//   console.log("bbboooo"),
+//   res.json(bucket)}
+//   )
+//   .catch((err) => {
+//     console.log("error getting kicks from bucket", err);
+//     res.status(500).json({
+//       message: "error getting kicks from bucket",
+//       error: err,
+//     });
+//   });
+
+// })
 
 // PUT - api/kick/:kickId/add - User can add ANY kick to the specified
 
