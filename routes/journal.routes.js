@@ -36,7 +36,7 @@ router.post("/journal", isAuthenticated, (req, res, next) => {
 
 //GET - api/journal - get a list of all journals, that are public
 
-router.get("/journal", (req, res, next) => {
+router.get("/journal/public", (req, res, next) => {
   Journal.find({visibility: 'Public'})
   .then((response) => {
     res.json(response);
@@ -52,8 +52,8 @@ router.get("/journal", (req, res, next) => {
 
 //GET - api/journal/:userId - get a list of all journals for a user
 
-router.get("/journal/:userId", (req, res, next) => {
-  const userId = req.params.userId;
+router.get("/journal/private", isAuthenticated, (req, res, next) => {
+  const userId = req.payload._id;
 
   Journal.find({user: userId})
   .then((response) => {
