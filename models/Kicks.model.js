@@ -40,7 +40,8 @@ const kicksSchema = new Schema(
         type: String,
         default:
           "https://res.cloudinary.com/coderkron/image/upload/v1651678876/pt-app/avatar-g2d383e400_1280_hojdie.png",
-      },
+        required: true,  
+        },
     ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

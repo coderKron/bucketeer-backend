@@ -14,6 +14,7 @@ const storySchema = new Schema(
     content: String,
     pictures: {
       type: String,
+      required: true,
     },
 
     createdBy: {
