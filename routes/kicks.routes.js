@@ -89,6 +89,7 @@ router.post("/kick", isAuthenticated, (req, res, next) => {
 
 router.get("/kick", (req, res, next) => {
   Kicks.find()
+    .populate("createdBy")
     .then((response) => {
       res.json(response);
     })
