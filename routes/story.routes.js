@@ -91,7 +91,7 @@ router.get('/story/:journalId', isAuthenticated, (req, res, next) => {
 router.delete("/story/:storyId", isAuthenticated, (req, res, next) => {
   const storyId = req.params.storyId
 
-  if (!mongoose.Types.ObjectId.isValid(journalId)) {
+  if (!mongoose.Types.ObjectId.isValid(storyId)) {
     res.status(400).json({ message: "Specified id is not valid" });
     return;
   }

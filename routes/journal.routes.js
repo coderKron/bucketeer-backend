@@ -56,7 +56,7 @@ router.get("/journal/public", (req, res, next) => {
 router.get("/journal/private", isAuthenticated, (req, res, next) => {
   const userId = req.payload._id;
 
-  Journal.find({ user: userId })
+  Journal.find({ createdBy: userId })
     .populate("story")
     .then((response) => {
       res.json(response);
