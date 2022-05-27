@@ -92,6 +92,40 @@ router.get("/journal/:journalId", (req, res, next) => {
 
 //PUT - api/journal/:journalId/remove - remove story from a journal
 
+router.put(
+  "/journal/:journalId/remove/story",
+  isAuthenticated,
+  (req, res, next) => {
+    const journalId = req.params.journalId;
+
+    if (!mongoose.Types.ObjectId.isValid(journalId)) {
+      res.status(400).json({ message: "Specified id is not valid" });
+      return;
+    }
+
+    Journal.findById(journalId)
+    .then((response) => {
+      response.createdBy == req.payload._id
+        ? Journal.findByIdAndUpdate(
+            journalId,
+            { $pull: { story: req.body.storyId } },
+            { new: true }
+          ).then((updatedBucket) => res.json(updatedBucket))
+        : res.status(403)
+            .json({
+              message: "Only the user that created the journal can delete a story from it",
+            })
+            .catch((err) => {
+              console.log("error updating journal", err);
+              res.status(500).json({
+                message: "error updating journal",
+                error: err,
+              });
+            });
+    });
+  }
+);
+
 //DELETE - api/journal/:journalId - delete journal
 router.delete("/journal/:journalId", isAuthenticated, (req, res, next) => {
   const journalId = req.params.journalId;
